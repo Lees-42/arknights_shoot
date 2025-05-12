@@ -5,7 +5,14 @@
 #include"weapon.h"
 #include <windows.h>
 
-
+// game_manager.cpp
+int game_manager::get_alive_enemy_count() const {
+    int count = 0;
+    for (const auto& enemy : m_enemies) {
+        if (enemy.get_alive()) count++;
+    }
+    return count;
+}
 
 void game_manager::process_input() {
     if (m_state == MENU) {
@@ -20,22 +27,22 @@ void game_manager::process_input() {
     if (m_state == RUNNING) {
         float current_time = GetTickCount() / 1000.0f;  // 当前时间（秒）
         // 攻击键（左键）检测
-        if (GetAsyncKeyState(VK_LBUTTON) & 0x8000) {
+        if (GetAsyncKeyState('J') & 0x8000) {
             m_player.shoot(current_time);  // 传递当前时间用于攻击间隔判断
         }
         // 玩家移动控制
-        if (GetAsyncKeyState(VK_LEFT) & 0x8000) {
+        if (GetAsyncKeyState('A') & 0x8000) {
             m_player.set_velocity_x(-5);
             m_player.set_facing_right(false); // 朝左移动，设置朝向为左
         }
-        else if (GetAsyncKeyState(VK_RIGHT) & 0x8000) {
+        else if (GetAsyncKeyState('D') & 0x8000) {
             m_player.set_velocity_x(5);
             m_player.set_facing_right(true); // 朝右移动，设置朝向为右
         }
         else {
             m_player.set_velocity_x(0);
         }
-        if (GetAsyncKeyState(VK_SPACE) & 0x8000) m_player.jump();
+        if (GetAsyncKeyState('W') & 0x8000) m_player.jump();
     }
 }
 
@@ -69,26 +76,55 @@ void game_manager::update() {
         m_player.set_is_grounded(false);
     }
      /*更新敌人*/
-    for (auto& enemy : m_enemies) {
-        m_physics.apply_gravity(enemy);
-        enemy.get_pos().y += enemy.get_velocity().y;
-        m_physics.check_platform_collision(enemy, m_game_map);
-        // 简单AI：左右移动
-        //enemy.get_velocity().x = 2;  // 示例移动逻辑
+    m_enemy_spawn_timer += delta_time; // 累计时间
+
+    // 当时间超过间隔且存活敌人<3时生成
+    if (m_enemy_spawn_timer >= m_enemy_spawn_interval &&
+        get_alive_enemy_count() < 3) {
+
+        const auto& platforms = m_game_map.get_platforms();
+        if (platforms.empty()) return; // 无平台则跳过
+
+        // 随机选一个平台
+        std::uniform_int_distribution<int> dist(0, platforms.size() - 1);
+        int platform_idx = dist(m_rng);
+        const auto& platform = platforms[platform_idx];
+
+        // 计算敌人生成位置（平台顶部，x随机）
+        RECT plat_rect = platform.get_rect();
+        float enemy_x = std::uniform_real_distribution<float>(
+            plat_rect.left, plat_rect.right - 64  // 64是敌人生成宽度（与enemy构造一致）
+        )(m_rng);
+        float enemy_y = plat_rect.top - 90;       
+
+        // 生成新敌人并添加到列表
+        m_enemies.emplace_back(enemy_x, enemy_y);
+
+        // 重置计时器
+        m_enemy_spawn_timer = 0.0f;
     }
+    // 更新子弹-敌人碰撞
     for (auto& enemy : m_enemies) {
         m_physics.apply_gravity(enemy);
+
+        // 更新敌人位置（同时处理x和y轴）
+        Vector2 enemy_vel = enemy.get_velocity();
+        enemy.get_pos().x += enemy_vel.x;  // 添加x轴位置更新
+        enemy.get_pos().y += enemy_vel.y;  // 原有y轴位置更新
+
         m_physics.check_platform_collision(enemy, m_game_map);
-        enemy.update();  // 敌人AI逻辑（如移动）
+        enemy.update();  
 
         // 子弹-敌人碰撞检测
-        for (auto& bullet : m_player.getWeapon().get_bullets()) {  // 改为非 const 引用
+        for (auto& bullet : m_player.getWeapon().get_bullets()) {
             if (bullet.get_alive() && m_physics.check_bullet_enemy_collision(bullet, enemy)) {
-                // 1. 计算击退方向（根据子弹速度方向）
+                // 计算击退方向（子弹飞行方向）
                 float bullet_dir = bullet.get_velocity().x > 0 ? 1.0f : -1.0f;
-                // 2. 应用击退（力度由子弹的 knockback 决定）
-                enemy.apply_knockback(bullet.get_knockback(), bullet_dir);
-                // 3. 标记子弹为已击中（后续会被武器系统销毁）
+
+                // 触发击退（假设击退力度为10，可根据需求调整）
+                enemy.apply_knockback(10.0f, bullet_dir);
+
+                // 标记子弹失效
                 bullet.set_alive(false);
             }
         }
@@ -137,12 +173,13 @@ void game_manager::run() {
 
     // 标记需要加载的资源列表
     std::vector<std::pair<std::string, const char*>> resources = {
-        {"player_idle_right", "./res/chars/move_02_right.png"},  // 玩家向右图片
-        {"player_idle_left", "./res/chars/move_02_left.png"},    // 玩家向左图片
-        {"enemy_idle_right", "./res/chars/move_02_right.png"}, // 敌人向右图片
-        {"enemy_idle_left", "./res/chars/move_02_left.png"},   // 敌人向左图片
+        {"player_idle_right", "./res/chars/walk_right_1.png"},  // 玩家向右图片
+        {"player_idle_left", "./res/chars/walk_left_1.png"},    // 玩家向左图片
+        {"enemy_idle_right", "./res/chars/watcher1.png"}, // 敌人向右图片
+        {"enemy_idle_left", "./res/chars/watcher1.png"},   // 敌人向左图片
         {"platform", "./res/platforms/1.png"},
-        {"bullet", "./res/bullets/1.png"}
+        {"bullet", "./res/bullets/2.png"},
+        {"game_map", "./res/bg.png"}
     };
     size_t current_load_index = 0;  // 当前加载的资源索引
 

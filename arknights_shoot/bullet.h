@@ -14,9 +14,12 @@ class bullet {
 public:
     // 构造函数：初始化位置、速度，加载资源
     bullet(float x, float y, float speed_x)
-        : pos({ x, y }), velocity({ speed_x, 0 }),
-        is_alive(true), knockback(5.0f),
-        lifetime(10.0f), alive_time(0.0f) {
+        : pos({ x, y }), 
+        velocity({ speed_x, 0 }),
+        is_alive(true),
+        knockback(60.0f),
+        lifetime(10.0f), 
+        alive_time(0.0f) {
         resource_manage::get_instance().load_image("bullet", "./res/bullets/2.png");
     }
 

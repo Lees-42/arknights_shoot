@@ -11,6 +11,7 @@ public:
     static constexpr float GRAVITY = 0.6f;       // 重力加速度
     static constexpr float MAX_FALL_SPEED = 12;  // 最大下落速度
 
+
     void apply_gravity(character& obj);                // 应用重力
     bool check_platform_collision(character& obj, const map& game_map); // 平台碰撞检测
     bool check_bullet_enemy_collision(const bullet& b, const enemy& e);  // 子弹-敌人碰撞检测

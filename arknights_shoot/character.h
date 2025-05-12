@@ -1,7 +1,7 @@
 // character.h
 #pragma once
 #include "math_utils.h"
-
+#include <cmath>
 class character {
 protected:
     Vector2 pos;        // 角色位置（左上角坐标）
@@ -30,7 +30,15 @@ public:
             is_grounded = false;
         }
     }
+    void apply_friction() {
+        // 水平速度乘以摩擦系数（衰减）
+        velocity.x *= friction;
 
+        // 若速度小于最小阈值，直接归零（避免无限小的速度）
+        if (std::abs(velocity.x) < min_velocity) {
+            velocity.x = 0;
+        }
+    }
     // 访问器
     /// 位置接口（关键优化：返回引用）
     Vector2& get_pos() { return pos; }
