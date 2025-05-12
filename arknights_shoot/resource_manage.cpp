@@ -29,6 +29,18 @@ bool resource_manage::load_image(const std::string& key, const char* path) {
     return true;
 }
 
+bool resource_manage::load_image_sequence(const std::string& base_key, const char* base_path, int frame_count) {
+    for (int i = 1; i <= frame_count; ++i) {
+        std::string key = base_key + std::to_string(i);
+        std::string path = std::string(base_path) + std::to_string(i) + ".png";
+        if (!load_image(key, path.c_str())) {
+            return false;
+        }
+    }
+    return true;
+}
+
+
 IMAGE* resource_manage::get_image(const std::string& key) {
     auto it = m_images.find(key);
     return (it != m_images.end()) ? &it->second : nullptr;

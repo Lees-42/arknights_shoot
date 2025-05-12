@@ -48,7 +48,7 @@ public:
     }
 
     void draw() {  // 绘制地图与平台
-        setbkcolor(RGB(0x2D, 0x34, 0x36));  // 背景色
+        setbkcolor(RGB(0x00, 0x00, 0x00));  // 背景色
         cleardevice();
        
         for (auto& p : m_platforms) p.draw();

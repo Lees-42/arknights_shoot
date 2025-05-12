@@ -14,7 +14,7 @@ public:
     void fire(const Vector2& fire_pos, float current_time) {
         if (current_time - last_fire_time >= fire_interval) {
             // 发射向右的子弹
-            m_bullets.emplace_back(fire_pos.x, fire_pos.y, 100.0f);
+            m_bullets.emplace_back(fire_pos.x, fire_pos.y, 200.0f);
             last_fire_time = current_time;  // 更新上次射击时间
         }
     }

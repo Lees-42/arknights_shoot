@@ -13,6 +13,9 @@ protected:
     float min_velocity = 0.1f;  // 最小速度阈值（小于此值时速度置0）
     float acceleration = 2.0f;  // 水平加速度（每秒增加的速度）
     float max_speed = 5.0f;     // 最大水平移动速度（限制速度上限）
+    bool is_facing_right = true; // 新增：角色是否朝右
+
+
 public:
     character(float x, float y, float w, float h)
         : pos({ x, y }), size({ w, h }), is_grounded(false), jump_power(-15) {
@@ -56,6 +59,16 @@ public:
     // 摩擦系数接口（可选动态调整）
     void set_friction(float f) { friction = f; }
     float get_friction() const { return friction; }
+
+    //方向设置接口
+    void set_facing_right(bool facing_right) {
+        is_facing_right = facing_right;
+    }
+
+    // 方向获取接口
+    bool get_facing_right() const {
+        return is_facing_right;
+    }
 
 
     friend class physics_engine;

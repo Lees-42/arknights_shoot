@@ -24,10 +24,17 @@ void game_manager::process_input() {
             m_player.shoot(current_time);  // 传递当前时间用于攻击间隔判断
         }
         // 玩家移动控制
-        if (GetAsyncKeyState(VK_LEFT) & 0x8000) m_player.set_velocity_x(-5);
-        else if (GetAsyncKeyState(VK_RIGHT) & 0x8000) m_player.set_velocity_x(5);
-        else m_player.set_velocity_x(0);
-
+        if (GetAsyncKeyState(VK_LEFT) & 0x8000) {
+            m_player.set_velocity_x(-5);
+            m_player.set_facing_right(false); // 朝左移动，设置朝向为左
+        }
+        else if (GetAsyncKeyState(VK_RIGHT) & 0x8000) {
+            m_player.set_velocity_x(5);
+            m_player.set_facing_right(true); // 朝右移动，设置朝向为右
+        }
+        else {
+            m_player.set_velocity_x(0);
+        }
         if (GetAsyncKeyState(VK_SPACE) & 0x8000) m_player.jump();
     }
 }
@@ -99,6 +106,8 @@ void game_manager::update() {
     if (m_physics.check_map_bounds(m_player, m_game_map)) {
 
     }
+    // 更新角色动画
+    m_player.update();
 }
 
 void game_manager::draw() {
@@ -106,7 +115,7 @@ void game_manager::draw() {
     
 
     if (m_state == LOADING) {
-        // 显示加载中的提示（原逻辑）
+        // 显示加载中的提示
         settextcolor(WHITE);
         outtextxy(500, 360, "loading");
         settextstyle(30, 0, _T("微软雅黑"));
@@ -114,7 +123,7 @@ void game_manager::draw() {
     }
     
     else if (m_state == RUNNING) {
-        // 正常游戏绘制（原逻辑）
+        // 正常游戏绘制
         m_game_map.draw();
         m_player.draw();
         m_player.getWeapon().draw();  // 绘制子弹
@@ -125,12 +134,13 @@ void game_manager::draw() {
 
 void game_manager::run() {
     initgraph(1280, 720);
-    //setcaption("明日方舟射击游戏");
 
     // 标记需要加载的资源列表
     std::vector<std::pair<std::string, const char*>> resources = {
-        {"player_idle", "./res/chars/move_02.png"},
-        {"enemy_idle", "./res/chars/move_02.png"},
+        {"player_idle_right", "./res/chars/move_02_right.png"},  // 玩家向右图片
+        {"player_idle_left", "./res/chars/move_02_left.png"},    // 玩家向左图片
+        {"enemy_idle_right", "./res/chars/move_02_right.png"}, // 敌人向右图片
+        {"enemy_idle_left", "./res/chars/move_02_left.png"},   // 敌人向左图片
         {"platform", "./res/platforms/1.png"},
         {"bullet", "./res/bullets/1.png"}
     };
