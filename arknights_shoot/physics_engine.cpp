@@ -13,11 +13,13 @@ void physics_engine::apply_gravity(character& obj) {
 }
 
 bool physics_engine::check_platform_collision(character& obj, const map& game_map) {
-    bool collided_vertically = false; // 标记是否发生垂直碰撞（上下方向）
+
     float highest_platform_top = -FLT_MAX;
-    RECT char_rect = {
+
+
+    RECT char_foot_rect = {
         (long)obj.get_pos().x,
-        (long)obj.get_pos().y,
+        (long)(obj.get_pos().y + obj.get_size().y - FOOT_HEIGHT),
         (long)(obj.get_pos().x + obj.get_size().x),
         (long)(obj.get_pos().y + obj.get_size().y)
     };
@@ -26,33 +28,26 @@ bool physics_engine::check_platform_collision(character& obj, const map& game_ma
         RECT plat_rect = platform.get_rect();
         RECT intersect;
 
-        // 先判断是否有碰撞
-        if (!IntersectRect(&intersect, &char_rect, &plat_rect)) {
-            continue;
-        }
-
-        // 计算x和y方向的重叠量
-        int x_overlap = intersect.right - intersect.left;   // x方向重叠宽度
-        int y_overlap = intersect.bottom - intersect.top;   // y方向重叠高度
-
-        if (x_overlap >= y_overlap && obj.get_velocity().y > 0) {
-            // 记录最高平台顶部
-            if (plat_rect.top > highest_platform_top) {
-                highest_platform_top = plat_rect.top;
+        // 检测脚部区域与平台的碰撞
+        if (IntersectRect(&intersect, &char_foot_rect, &plat_rect)) {
+            // 仅当角色处于下落状态时才处理碰撞
+            if (obj.get_velocity().y > 0) {
+                // 记录最高的平台顶部Y坐标
+                if (plat_rect.top > highest_platform_top) {
+                    highest_platform_top = plat_rect.top;
+                }
             }
-            collided_vertically = true;
         }
     }
 
-    // 处理垂直碰撞：将角色固定在最高平台的顶部
-    if (collided_vertically) {
-        obj.get_pos().y = highest_platform_top - obj.get_size().y;
-        obj.set_velocity_y(0);
-        obj.set_is_grounded(true);
+    // 存在有效碰撞时调整角色位置
+    if (highest_platform_top != -FLT_MAX) {
+        obj.get_pos().y = highest_platform_top - obj.get_size().y;  // 角色底部对齐平台顶部
+        obj.set_velocity_y(0);  // 垂直速度归零
+        obj.set_is_grounded(true);  // 标记为站在平台上
         return true;
     }
-
-    // 无垂直碰撞时，角色未站在平台上
+    // 无碰撞时，角色未站在平台上
     obj.set_is_grounded(false);
     return false;
 }
