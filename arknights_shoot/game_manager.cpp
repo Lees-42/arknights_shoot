@@ -71,24 +71,37 @@ void game_manager::update() {
      /*更新敌人*/
     for (auto& enemy : m_enemies) {
         m_physics.apply_gravity(enemy);
+
         enemy.get_pos().y += enemy.get_velocity().y;
+
         m_physics.check_platform_collision(enemy, m_game_map);
+
+        enemy.update();  
         // 简单AI：左右移动
         //enemy.get_velocity().x = 2;  // 示例移动逻辑
     }
+    // 更新子弹-敌人碰撞
     for (auto& enemy : m_enemies) {
         m_physics.apply_gravity(enemy);
+
+        // 更新敌人位置（同时处理x和y轴）
+        Vector2 enemy_vel = enemy.get_velocity();
+        enemy.get_pos().x += enemy_vel.x;  // 添加x轴位置更新
+        enemy.get_pos().y += enemy_vel.y;  // 原有y轴位置更新
+
         m_physics.check_platform_collision(enemy, m_game_map);
-        enemy.update();  // 敌人AI逻辑（如移动）
+        enemy.update();  
 
         // 子弹-敌人碰撞检测
-        for (auto& bullet : m_player.getWeapon().get_bullets()) {  // 改为非 const 引用
+        for (auto& bullet : m_player.getWeapon().get_bullets()) {
             if (bullet.get_alive() && m_physics.check_bullet_enemy_collision(bullet, enemy)) {
-                // 1. 计算击退方向（根据子弹速度方向）
+                // 计算击退方向（子弹飞行方向）
                 float bullet_dir = bullet.get_velocity().x > 0 ? 1.0f : -1.0f;
-                // 2. 应用击退（力度由子弹的 knockback 决定）
-                enemy.apply_knockback(bullet.get_knockback(), bullet_dir);
-                // 3. 标记子弹为已击中（后续会被武器系统销毁）
+
+                // 触发击退（假设击退力度为10，可根据需求调整）
+                enemy.apply_knockback(10.0f, bullet_dir);
+
+                // 标记子弹失效
                 bullet.set_alive(false);
             }
         }
@@ -137,12 +150,12 @@ void game_manager::run() {
 
     // 标记需要加载的资源列表
     std::vector<std::pair<std::string, const char*>> resources = {
-        {"player_idle_right", "./res/chars/move_02_right.png"},  // 玩家向右图片
-        {"player_idle_left", "./res/chars/move_02_left.png"},    // 玩家向左图片
+        {"player_idle_right", "./res/chars/walk_right_1.png"},  // 玩家向右图片
+        {"player_idle_left", "./res/chars/walk_left_1.png"},    // 玩家向左图片
         {"enemy_idle_right", "./res/chars/move_02_right.png"}, // 敌人向右图片
         {"enemy_idle_left", "./res/chars/move_02_left.png"},   // 敌人向左图片
         {"platform", "./res/platforms/1.png"},
-        {"bullet", "./res/bullets/1.png"}
+        {"bullet", "./res/bullets/2.png"}
     };
     size_t current_load_index = 0;  // 当前加载的资源索引
 

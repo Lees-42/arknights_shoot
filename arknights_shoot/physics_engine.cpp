@@ -13,41 +13,48 @@ void physics_engine::apply_gravity(character& obj) {
 }
 
 bool physics_engine::check_platform_collision(character& obj, const map& game_map) {
-    // 检查AABB碰撞（角色与平台之间）
-    bool collided = false;
+    bool collided_vertically = false; // 标记是否发生垂直碰撞（上下方向）
     float highest_platform_top = -FLT_MAX;
     RECT char_rect = {
-            (long)obj.get_pos().x,
-            (long)obj.get_pos().y,
-            (long)(obj.get_pos().x + obj.get_size().x),
-            (long)(obj.get_pos().y + obj.get_size().y)
+        (long)obj.get_pos().x,
+        (long)obj.get_pos().y,
+        (long)(obj.get_pos().x + obj.get_size().x),
+        (long)(obj.get_pos().y + obj.get_size().y)
     };
+
     for (const auto& platform : game_map.get_platforms()) {
-        RECT temp_char = char_rect;
         RECT plat_rect = platform.get_rect();
-        if (IntersectRect(&temp_char, &char_rect, &plat_rect)) {
-            // 当角色下落时停在平台上
-            if(obj.get_velocity().y > 0) {
-                // 角色底部 y 坐标 >= 平台顶部 y 坐标（误差范围可调整）
-                float char_bottom = obj.get_pos().y + obj.get_size().y;
-                if (plat_rect.top > highest_platform_top) {
-                    highest_platform_top = plat_rect.top;
-                }
-                    collided = true;
-                
+        RECT intersect;
+
+        // 先判断是否有碰撞
+        if (!IntersectRect(&intersect, &char_rect, &plat_rect)) {
+            continue;
+        }
+
+        // 计算x和y方向的重叠量
+        int x_overlap = intersect.right - intersect.left;   // x方向重叠宽度
+        int y_overlap = intersect.bottom - intersect.top;   // y方向重叠高度
+
+        if (x_overlap >= y_overlap && obj.get_velocity().y > 0) {
+            // 记录最高平台顶部
+            if (plat_rect.top > highest_platform_top) {
+                highest_platform_top = plat_rect.top;
             }
+            collided_vertically = true;
         }
     }
-    if (collided) {
-        // 将角色放置在最高平台的顶部
+
+    // 处理垂直碰撞：将角色固定在最高平台的顶部
+    if (collided_vertically) {
         obj.get_pos().y = highest_platform_top - obj.get_size().y;
         obj.set_velocity_y(0);
         obj.set_is_grounded(true);
+        return true;
     }
-    else {
-        obj.set_is_grounded(false);
-    }
-    return collided;
+
+    // 无垂直碰撞时，角色未站在平台上
+    obj.set_is_grounded(false);
+    return false;
 }
 bool physics_engine::check_map_bounds(const character& obj, const map& game_map) {
     // 左右边界检测（超出即淘汰）

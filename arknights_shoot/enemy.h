@@ -7,14 +7,15 @@ class enemy : public character {
     bool is_alive = true;  // 敌人是否存活
     float speed = 1.0f;  // 敌人速度
 public:
-    enemy(float x, float y) : character(x, y, 64, 64) {
+    enemy(float x, float y) : character(x, y, 64, 113) {
         // 初始化敌人资源（示例）
-        resource_manage::get_instance().load_image("enemy_idle_right", "./res/chars/move_02_right.png");
-    resource_manage::get_instance().load_image("enemy_idle_left", "./res/chars/move_02_left.png");
+        resource_manage::get_instance().load_image("enemy_idle_right", "./res/chars/walk_right_1.png");
+        resource_manage::get_instance().load_image("enemy_idle_left", "./res/chars/walk_left_1.png");
     }
 
     void update() override {  // 敌人更新逻辑（示例：简单左右移动）
         if (!is_alive) return;
+        apply_friction();
     }
 
     void draw() override {  // 绘制敌人

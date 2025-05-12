@@ -6,16 +6,15 @@
 
 class weapon {
     std::vector<bullet> m_bullets;  // 子弹列表
-    float fire_interval = 0.3f;     // 射击间隔（秒）
+    float fire_interval = 0.2f;     // 射击间隔（秒）
     float last_fire_time = 0.0f;    // 上次射击时间
 
 public:
     // 发射子弹（从指定位置，考虑射击间隔）
-    void fire(const Vector2& fire_pos, float current_time) {
+    void fire(const Vector2& fire_pos, float current_time, float speed_x) {  // 新增speed_x参数
         if (current_time - last_fire_time >= fire_interval) {
-            // 发射向右的子弹
-            m_bullets.emplace_back(fire_pos.x, fire_pos.y, 200.0f);
-            last_fire_time = current_time;  // 更新上次射击时间
+            m_bullets.emplace_back(fire_pos.x, fire_pos.y, speed_x);  // 动态速度方向
+            last_fire_time = current_time;
         }
     }
 

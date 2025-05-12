@@ -51,12 +51,22 @@ public:
         }
     }
     void shoot(float current_time) {
-        // 从玩家中心位置发射（x: 中右，y: 中下）
-        Vector2 fire_pos = {
-            pos.x + size.x / 2,
-            pos.y + size.y / 2
-        };
-        m_weapon.fire(fire_pos, current_time);
+        // 获取角色当前朝向
+        bool facing_right = get_facing_right();
+        float direction = facing_right ? 1.0f : -1.0f;  // 向右为1，向左为-1
+
+        // 计算子弹速度（方向由朝向决定）
+        float bullet_speed = 300.0f;  // 子弹基础速度（可调整）
+        float speed_x = bullet_speed * direction;
+
+        // 调整子弹发射位置（避免从角色身体内部生成）
+        float fire_x = pos.x + (facing_right ? (size.x - 10) : 10);  // 向右时从角色右侧发射，向左时从左侧（偏移10像素）
+        float fire_y = pos.y + size.y / 2;  // 垂直方向居中
+
+        Vector2 fire_pos = { fire_x, fire_y };
+
+        // 调用武器类发射子弹（传递方向速度）
+        m_weapon.fire(fire_pos, current_time, speed_x);
     }
 
     weapon& getWeapon() { return m_weapon; }
