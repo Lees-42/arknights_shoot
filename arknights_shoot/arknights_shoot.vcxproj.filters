@@ -51,6 +51,9 @@
     <ClInclude Include="math_utils.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="graphics_utils.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="physics_engine.cpp">

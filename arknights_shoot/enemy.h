@@ -2,6 +2,7 @@
 #pragma once
 #include "character.h"
 #include "resource_manage.h"
+#include "graphics_utils.h"
 
 class enemy : public character {
     bool is_alive = true;  // 敌人是否存活
@@ -27,9 +28,9 @@ public:
             img = resource_manage::get_instance().get_image("enemy_idle_left");
         }
         if (img) {
-            putimage((int)pos.x, (int)pos.y,
+            putimage_alpha((int)pos.x, (int)pos.y,
                 (int)size.x, (int)size.y,  // 目标尺寸（敌人大小）
-                img, 0, 0);  // 直接使用预加载的方向图片
+                img);  // 直接使用预加载的方向图片
         }
     }
 

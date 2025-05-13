@@ -11,6 +11,9 @@ private:
     ~resource_manage();
 
 public:
+
+    
+
     static resource_manage& get_instance();
     bool load_image(const std::string& key, const char* path);  // º”‘ÿÕº∆¨µΩª∫¥Ê
     bool load_image_sequence(const std::string& base_key, const char* base_path, int frame_count); // º”‘ÿ–Ú¡–÷°Õº∆¨

@@ -3,8 +3,8 @@
 #include "character.h"
 #include "weapon.h"
 #include <vector>
-
-
+#include "graphics_utils.h"
+#pragma comment(lib, "MSIMG32.LIB ")
 class player : public character {
     weapon m_weapon;  // 玩家武器
     int current_frame;  // 当前帧
@@ -13,13 +13,14 @@ class player : public character {
     int frame_timer;    // 帧计时器
 
 public:
-    player(float x, float y) : character(x, y, 64, 113), frame_count(33) {
+    
+    player(float x, float y) : character(x, y, 64, 100), frame_count(33) {
         // 加载角色资源（示例路径）
         resource_manage::get_instance().load_image("player_idle_right", "./res/chars/walk_right_1.png");
-        resource_manage::get_instance().load_image("player_idle_left", "./res/chars/walk_left_1.png");
+        resource_manage::get_instance().load_image("player_idle_left", "./res/chars/walk_right_2.png");
         // 加载角色行走序列帧图片
-        resource_manage::get_instance().load_image_sequence("player_walk_right_", "./res/chars/move/walk_right/walk_right_", frame_count);
-        resource_manage::get_instance().load_image_sequence("player_walk_left_", "./res/chars/move/walk_left/walk_left_", frame_count);
+        resource_manage::get_instance().load_image_sequence("player_walk_right_", "./res/chars/move1/walk_right/walk_right_", frame_count);
+        resource_manage::get_instance().load_image_sequence("player_walk_left_", "./res/chars/move1/walk_left/walk_right_", frame_count);
     }
 
     void update() override;  // 实现更新逻辑
@@ -45,9 +46,13 @@ public:
         }
 
         if (img) {
-            putimage((int)get_pos().x, (int)get_pos().y,
-                (int)get_size().x, (int)get_size().y,  // 目标尺寸（角色大小）
-                img, 0, 0);                // 从图片原点(0,0)开始绘制
+            putimage_alpha(
+                (int)get_pos().x,
+                (int)get_pos().y,
+                (int)get_size().x,  // 目标宽度（角色宽度）
+                (int)get_size().y,  // 目标高度（角色高度）
+                img
+            );
         }
     }
     void shoot(float current_time) {
