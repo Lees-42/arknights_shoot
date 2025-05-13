@@ -1,1 +1,0 @@
-# arknights_shoot
